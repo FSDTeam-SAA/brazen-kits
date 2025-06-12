@@ -110,13 +110,13 @@ export default function LandingPage() {
 
         {/* Mobile Layout */}
         <div className="lg:hidden">
-          <div className="relative min-h-screen px-6 py-8 mb-10">
+          <div className="relative min-h-[600px] md:min-h-screen px-6 py-8 mb-10">
             <h1 className="text-white font-jockey font-normal text-[90px] md:text-[100px] leading-none tracking-normal absolute top-8 left-6">
               BRAZEN
               <br />
               KITS
             </h1>
-            <div className="w-[300px] md:w-[350px] h-[500px] md:h-[600px] absolute top-[20%] left-[50%] transform -translate-x-1/2 md:left-[50%]">
+            <div className="w-[300px] md:w-[350px] h-[400px] md:h-[600px] absolute top-[30%] left-[50%] transform -translate-x-1/2 md:left-[50%]">
               <Image
                 src="/crystal.png"
                 alt="3D Crystal"
