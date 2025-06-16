@@ -1,50 +1,63 @@
+"use client";
+
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { Toaster, toast } from "sonner";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function LandingPage() {
-  async function handleSubmit(formData: FormData) {
-    "use server";
+  const [isLoading, setIsLoading] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
 
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const message = formData.get("message") as string;
+  async function handleSubmit() {
+    setIsLoading(true);
+    const loadingToastId = toast.loading("Sending your message...");
 
     try {
-      const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-        }/api/send-email`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name, email, message }),
-        }
-      );
+      const response = await fetch(`/api/send-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, message }),
+      });
 
       if (response.ok) {
-        console.log("Email sent successfully");
+        toast.success("Message received successfully!", { id: loadingToastId });
+        setName("");
+        setEmail("");
+        setMessage("");
       } else {
-        console.error("Failed to send email");
+        const errorData = await response.json();
+        toast.error(
+          `Failed to send email: ${errorData.message || response.statusText}`,
+          { id: loadingToastId }
+        );
+        console.error("Failed to send Message", errorData);
       }
     } catch (error) {
-      console.error("Error sending email:", error);
+      toast.error(`Error sending Message: ${(error as Error).message}`, {
+        id: loadingToastId,
+      });
+      console.error("Error sending Message:", error);
+    } finally {
+      setIsLoading(false); // Set loading to false after submission
     }
   }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-brazen-dark">
+      <Toaster richColors expand position="top-right" />
       <div className="absolute inset-0 z-0 bg-brazen-overlay/10 " />
-
       {/* Top Left Ellipse - Blurry background light */}
       <div className="absolute z-10 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] md:w-[500px] md:h-[500px] -top-[100px] -left-[60px] sm:-top-[120px] sm:-left-[70px] md:-top-[130px] md:-left-[80px] rounded-full bg-gradient-radial from-brazen-ellipse/50 via-brazen-ellipse/40 to-transparent blur-[100px] sm:blur-[120px] md:blur-[130px]" />
-
       {/* Bottom Right Ellipse - Blurry background light */}
       <div className="absolute z-10 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] md:w-[500px] md:h-[500px] -bottom-[100px] -right-[60px] sm:-bottom-[120px] sm:-right-[70px] md:-bottom-[130px] md:-right-[80px] rounded-full bg-gradient-radial from-brazen-ellipse/50 via-brazen-ellipse/40 to-transparent blur-[100px] sm:blur-[120px] md:blur-[130px]" />
-
       <div className="relative z-20">
         {/* Desktop Layout */}
         <div className="hidden lg:grid lg:grid-cols-2 min-h-screen">
@@ -75,11 +88,20 @@ export default function LandingPage() {
                 License Your Music
               </h2>
 
-              <form action={handleSubmit} className="space-y-10">
+              {/* Use a client-side form action if handleSubmit is a client-side function */}
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault(); // Prevent default form submission
+                  await handleSubmit(); // Call handleSubmit without arguments
+                }}
+                className="space-y-10"
+              >
                 <Input
                   name="name"
                   placeholder="Name"
                   required
+                  value={name} // Bind value to state
+                  onChange={(e) => setName(e.target.value)} // Update state on change
                   className="rounded-none h-14 !text-xl border-0 bg-brazen-input text-gray-800 placeholder:text-gray-800 font-jockey font-normal shadow-brazen"
                 />
 
@@ -87,6 +109,8 @@ export default function LandingPage() {
                   name="email"
                   placeholder="Email/Phone"
                   required
+                  value={email} // Bind value to state
+                  onChange={(e) => setEmail(e.target.value)} // Update state on change
                   className="rounded-none h-14 !text-xl border-0 bg-brazen-input text-gray-800 placeholder:text-gray-800 font-jockey font-normal shadow-brazen"
                 />
 
@@ -94,13 +118,19 @@ export default function LandingPage() {
                   name="message"
                   placeholder="Message: Let us know what tracks you have in mind and how best to reach you"
                   required
+                  value={message} // Bind value to state
+                  onChange={(e) => setMessage(e.target.value)} // Update state on change
                   className="rounded-none min-h-40 !text-xl border-0 bg-brazen-input text-gray-800 placeholder:text-gray-800 font-jockey font-normal shadow-brazen resize-none"
                 />
 
                 <Button
                   type="submit"
+                  disabled={isLoading}
                   className="rounded-none w-full h-12 text-lg bg-transparent hover:bg-white/10 text-white border border-white/50 font-jockey font-normal"
                 >
+                  {isLoading && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}{" "}
                   Submit
                 </Button>
               </form>
@@ -137,11 +167,20 @@ export default function LandingPage() {
                 License Your Music
               </h2>
 
-              <form action={handleSubmit} className="space-y-4">
+              {/* Use a client-side form action if handleSubmit is a client-side function */}
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault(); // Prevent default form submission
+                  await handleSubmit(); // Call handleSubmit without arguments
+                }}
+                className="space-y-4"
+              >
                 <Input
                   name="name"
                   placeholder="Name"
                   required
+                  value={name} // Bind value to state
+                  onChange={(e) => setName(e.target.value)} // Update state on change
                   className="rounded-none h-12 text-base border-0 bg-brazen-input text-gray-800 placeholder:text-gray-800 font-jockey font-normal shadow-brazen"
                 />
 
@@ -149,6 +188,8 @@ export default function LandingPage() {
                   name="email"
                   placeholder="Email/Phone"
                   required
+                  value={email} // Bind value to state
+                  onChange={(e) => setEmail(e.target.value)} // Update state on change
                   className="rounded-none h-12 text-base border-0 bg-brazen-input text-gray-800 placeholder:text-gray-800 font-jockey font-normal shadow-brazen"
                 />
 
@@ -156,13 +197,20 @@ export default function LandingPage() {
                   name="message"
                   placeholder="Message: Let us know what tracks you have in mind and how best to reach you"
                   required
+                  value={message} // Bind value to state
+                  onChange={(e) => setMessage(e.target.value)} // Update state on change
                   className="rounded-none min-h-28 text-base border-0 bg-brazen-input text-gray-800 placeholder:text-gray-800 font-jockey font-normal shadow-brazen resize-none"
                 />
 
                 <Button
                   type="submit"
+                  disabled={isLoading} // Disable button when loading
                   className="rounded-none w-full h-12 text-lg bg-transparent hover:bg-white/10 text-white border border-white/50 font-jockey font-normal"
                 >
+                  {isLoading && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}{" "}
+                  {/* Spinning icon */}
                   Submit
                 </Button>
               </form>
